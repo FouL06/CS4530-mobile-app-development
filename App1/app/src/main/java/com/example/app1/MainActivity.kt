@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Check if access to storage
                 if (isExternalStorageWritable) {
-                    val filePathString = saveImage(imgProfileImage)
+                    val filePathString = writeImage(imgProfileImage)
                     displayIntent!!.putExtra("IMG_PATH", filePathString)
                 } else {
                     Toast.makeText(this, "External storage is not accessible", Toast.LENGTH_SHORT)
@@ -128,22 +128,26 @@ class MainActivity : AppCompatActivity() {
             return Environment.MEDIA_MOUNTED == state
         }
 
-    private fun saveImage(finalBitmap: Bitmap?): String {
-        val root = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val myDir = File("$root/saved_images")
-        myDir.mkdirs()
+    private fun writeImage(finalBitmap: Bitmap?): String {
+        // Get pictures directory path
+        val dir = File("${getExternalFilesDir(Environment.DIRECTORY_PICTURES)}/saved_images")
+        dir.mkdirs()
+
+        // Get files timestamp to grab latest file.
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val fname = "Thumbnail_$timeStamp.jpg"
-        val file = File(myDir, fname)
+        val fileName = "Thumbnail_$timeStamp.jpg"
+
+        // Get file and check to see if it exists
+        val file = File(dir, fileName)
         if (file.exists()) file.delete()
         try {
+            // Write file to jpeg
             val out = FileOutputStream(file)
             finalBitmap!!.compress(Bitmap.CompressFormat.JPEG, 90, out)
             out.flush()
             out.close()
-            Toast.makeText(this, "file saved!", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Toast.makeText(this, "Unable to get image from pictures directory", Toast.LENGTH_SHORT)
         }
         return file.absolutePath
     }
